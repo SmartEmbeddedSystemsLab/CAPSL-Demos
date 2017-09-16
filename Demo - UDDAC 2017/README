@@ -1,7 +1,7 @@
 README
 
 Demo Description
-  The demo is a simple client-server setup with the host computer as the client and the Zybo FPGA as the server.
+  The demo is a simple client-server setup with the Zybo FPGA as the server and client.
 
   The Zybo will run a simple echo server that the client program will send messages to.
   The client initiates the connection to perform a simplified TLS handshake with the server in order to share a session key to encrypt the messages sent and then echoed back. The client and server will both run until stopped. The client sends messages every 5 seconds.
