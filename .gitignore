@@ -1,2 +1,5 @@
-// Remove Mac filesystem residue
+// Remove Mac Filesystem Residue
 .DS_Store
+
+// Remove Python Cache
+__pycache__

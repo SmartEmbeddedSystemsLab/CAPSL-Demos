@@ -1,0 +1,61 @@
+README
+
+Demo Description
+  The demo is a simple client-server setup with the host computer as the client and the Zybo FPGA as the server.
+
+  The Zybo will run a simple echo server that the client program will send messages to.
+  The client initiates the connection to perform a simplified TLS handshake with the server in order to share a session key to encrypt the messages sent and then echoed back. The client and server will both run until stopped. The client sends messages every 5 seconds.
+
+  The basics of the TLS handshake are:
+    1. Client connects to server, shares certificate, asks server to identify itself
+    2.    Server sends public key
+    3. Client creates, encrypts (with server public key), and sends AES session key
+    4.    Server decrypts session key, sends acknowledgement (encrypted with session key)
+    .... All proceeding transmissions encrypted with session key
+
+  Both the client and server show information regarding the handshake while running. This is the observable. The output should be labelled with the corresponding step of TLS above.
+
+  Where does CAPSL fit in?
+    The server running on the ZYBO will be executed with arguments specifying the RSA encryption modules in hardware need to be used. There are 5 modules, RSA trojan-free, T100, T200, T300, T400. Reference the RSA Trojan spreadsheet to reference information regarding these simple trojans.
+
+    There is a kernel module exposing the AXI interface of the modules that allows us to access them in software. The software will automatically use the trojans and included sandbox based on the arguments provided.
+
+  So, what is being tested?
+    We are demonstrating our sandbox against the RSA trojans. During the server's decryption phase of the session key, it will output information of the various rounds needed to decrypt the session key with the server's private key. I am currently displaying only the first and last rounds of RSA decryption. RSA is being done with Electronic Code Book style blocks (Yes, this is extremely insecure).
+
+    The decryption is performed with all trojans as well as with trojans within the Sandbox. The resulting output of each decryption round is shown in comparison to all other results. There are only a small number of session keys possible and only one IV being used for all encryptions. This allowed me to set triggers for RSA trojans T100 and T200 to ensure that my TLS handshake will activate each of these trojans. The client will randomly loop through its set of available session keys and will activate those trojans based on the activating session key.
+
+    The output information clearly labels cases where keys are leaked and our sandboxes not allowing this leak. We are able to do this by detecting the trigger and forcing the output to zero. We cannot salvage the decryption as the output was the key. This is explicitly refused with our RSA interface specification file. This file is attached for reference.
+
+    For the T300, T400 trojans, these are activated by a counter and will activate after just two encryptions. This is why they are always shown for the 21st round (last round for 32 bit session keys padded with my non-standard padding scheme) of RSA since they have been activated. The sandbox detects the counter trigger and forces a reset to the modules to ensure we are able to continue using the module safely.
+    ** This is different than above where we are unable to salvage functionality for encryptions containing the trigger.
+
+
+Demo Setup
+
+  The Zybo requires an SD card that can be created from the shared ZyboSD image file.
+    Insert the SD card.
+    Determine the device name.
+    Run the following command to overwrite the entire SD card with the ZyboSD image.
+      The /dev/sdc reflects my SD card. Yours may differ. Be sure NOT to add any numbers to the end of your device because we wish to overwrite the entire SD card, not just a single partition.
+
+    sudo dd bs=512 if=~/Downloads/ZyboSD.img of=/dev/sdc
+
+  After cloning, insert the SD card to the Zybo and connect it to power and ethernet. Power on the Zybo and a terminal should be available via the USB serial connection. You can use the below command to pull up this shell. Typically, the ZYBO is mounted to this location, though it could be any ttyUSBX device.
+
+    picocom -b 115200 /dev/ttyUSB1
+
+
+Running the Demo
+
+  In the root user's home folder, there is a setup script that will handle compiling the needed utilities and inserting the kernel module. Tun this with:
+
+    ./setup
+
+  With setup complete, the script in the home folder on the Zybo should be run to start the Echo server on the Zybo. Run the following script from the home folder on Zybo.
+
+    ./startServer
+
+  Run the following script from the home folder on Zybo to start the client. This is intended to be done is another terminal window for demonstration purposes.
+
+    ./startClient

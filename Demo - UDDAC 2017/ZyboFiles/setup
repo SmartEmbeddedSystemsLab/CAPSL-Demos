@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Set IP
+ifconfig eth0 10.0.0.2
+
+# Build the RSA test and write utility
+gcc /root/Programs/RSA_Test.c -o /root/Programs/rsatest
+gcc /root/Programs/RSA_Write.c -o /root/Programs/rsawrite
+
+# Add driver and create /dev/rsa
+insmod /root/Drivers/rsa.ko
+mknod /dev/rsa c 240 0
+
+# Run RSA Test
+cd /root/Programs
+./rsatest

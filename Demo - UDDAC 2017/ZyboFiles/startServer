@@ -1,0 +1,3 @@
+#!/bin/bash
+
+python3 Programs/RunEchoServer.py 8000 -s RSA

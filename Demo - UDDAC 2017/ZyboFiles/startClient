@@ -1,0 +1,3 @@
+#!/bin/bash
+
+python3 Programs/RunClient.py localhost 8000
