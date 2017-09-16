@@ -1,0 +1,3 @@
+#!/bin/bash
+
+python3 RunEchoServer.py 8000 -s ALL
